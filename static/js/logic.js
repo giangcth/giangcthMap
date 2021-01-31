@@ -4,9 +4,41 @@ var tectUrl="https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJ
 
 
 d3.json(queryUrl, function(data) {
+
   // Once we get a response, send the data.features object to the createFeatures function
   createFeatures(data.features);
 });
+
+
+// Create color scale bar
+
+function circlecolor(mag) {
+  if (mag <=1) {
+
+      color ="#00af00";
+  }
+  else if (mag > 1 && mag <= 2) {
+
+      color ="#5ee575";
+  }
+  else if (mag >2 && mag <= 3) {
+
+      color ="#e0ed03";
+  }
+  else if (mag > 3 && mag <= 4) {
+
+      color ="#ffaf00";
+  }
+  else if (mag > 4 && mag <= 5) {
+
+      color ="#ff5f00";
+  }
+  else 
+      color = "#ff0000";
+  
+      return color;
+};
+
 
 function createFeatures(earthquakeData) {
 
@@ -18,40 +50,12 @@ function createFeatures(earthquakeData) {
   }
 
   
-
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
   
   var earthquakes = L.geoJSON(earthquakeData, {
     onEachFeature: onEachFeature,
     pointToLayer: function (feature, coordinate) {
-
-        function circlecolor(mag) {
-            if (mag <=1) {
-
-                color ="#00af00";
-            }
-            else if (mag > 1 && mag <= 2) {
-
-                color ="#00ff5f";
-            }
-            else if (mag >2 && mag <= 3) {
-
-                color ="#d7ff00";
-            }
-            else if (mag > 3 && mag <= 4) {
-
-                color ="#ffaf00";
-            }
-            else if (mag > 4 && mag <= 5) {
-
-                color ="#ff5f00";
-            }
-            else 
-                color = "#ff0000";
-            
-                return color;
-        };
 
         var markerColors = {
           radius: 4*feature.properties.mag,
@@ -64,9 +68,7 @@ function createFeatures(earthquakeData) {
         return L.circleMarker(coordinate, markerColors);
     }
  
-    
-    
-    });
+  });
 
     // Sending our earthquakes layer to the createMap function
     createMap(earthquakes);
@@ -115,7 +117,7 @@ function createMap(earthquakes) {
 
   d3.json(tectUrl, function(data) {
       L.geoJSON(data, {
-          color: "orange",
+          color: "#d55952",
           weight: 2
       }).addTo(tectonics);
   });
@@ -144,34 +146,21 @@ function createMap(earthquakes) {
   }).addTo(myMap);
 
   // Set up the legend
-  var legend = L.control({ 
-    position: "bottomright",
-    x: "75%",
-    y: "25%"
-});
+  var legend = L.control({ position: "bottomright"});
 
   legend.onAdd = function() {
       var div = L.DomUtil.create("div", "info legend");
-      var limits = ["1-", "1-2", "2-3", "3-4", "4-5", "5+"];
-      var colors = ["#00af00", "#00ff5f","#d7ff00", "#ffaf00", "#ff5f00","#ff0000" ];
-      var labels = [];
+      grades = [0,1,2,3,4,5];
 
-      // Add list of labels:
-      var legendInfo = "<h1>Magitude Scale</h1>";
-
-      div.innerHTML = legendInfo;
-
-      limits.forEach(function(limit, index) {
-        labels.push(</li>" "<li style=\"background-color: "+  colors[index] + "\"></li>");
-      });
-  
-      div.innerHTML += "<ul>" + labels.join("") + "</ul>";
-
-      return div;
+      for (var i = 0; i < grades.length; i++) {
+        div.innerHTML += '<i style= "background:' + circlecolor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+        }
+        return div;
   };
 
+      
   // Adding legend to the map
   legend.addTo(myMap);
-}
 
+};
 
